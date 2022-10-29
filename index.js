@@ -131,3 +131,11 @@ app.post("/users/:id", (request, response) => {
 
   response.json(findUser);
 });
+
+// express 104, task 1
+app.delete("/users/:id", (request, response) =>{
+  let users = app.get("users");
+  let userIDToDelete = request.params.id;
+
+  const findUserToDelete = users.find((object) => object.id === parseInt(userIDToDelete));
+})
