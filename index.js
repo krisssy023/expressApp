@@ -1,5 +1,6 @@
 import express, { response } from "express";
 import EmailValidator from "./Middleware/EmailValidator.js";
+import {UserService} from "./UserService.js";
 
 const app = express();
 app.use(express.json());
@@ -9,6 +10,8 @@ const message = [{ message: "Haluu!" }];
 
 // const users = []
 app.set("users", []);
+app.use("/UserService", UserService)
+app.set("id","id")
 
 //Task 1
 app.get("/", (req, res) => {
@@ -56,11 +59,13 @@ app.get("/users", (req, res) => {
   res.status(200).json(users);
 });
 
+//express 104 class read
 app.get("/users/:id", (request, response) => {
   let users = app.get("users");
   const searchedUser = request.params.id;
+  console.log('index searched', searchedUser)
 
-  //TASK 2
+  // TASK 2
   if (isNaN(searchedUser)) {
     response.status(400).json({
       error: "Invalid ID.",
@@ -70,16 +75,22 @@ app.get("/users/:id", (request, response) => {
   //express103, task 1
   // find user from array
 
-  const findUser = users.find((object) => object.id === parseInt(searchedUser));
+let findUser = users.find((object) => object.id === parseInt(searchedUser));
+
+  console.log('index find',findUser)
 
   //express103, task 2
   if (findUser === undefined) {
-    response.status(404).json({
+    return response.status(404).json({
       error: "Sorry page cannot be found.",
     });
   }
 
-  response.json(findUser);
+  const userFound = new UserService(users,searchedUser)
+
+  return response
+  .status(200)
+  .json(userFound.read())
 });
 
 app.post("/users/:id", (request, response) => {
@@ -134,8 +145,24 @@ app.post("/users/:id", (request, response) => {
 
 // express 104, task 1
 app.delete("/users/:id", (request, response) =>{
-  let users = app.get("users");
-  let userIDToDelete = request.params.id;
 
-  const findUserToDelete = users.find((object) => object.id === parseInt(userIDToDelete));
+  let users = app.get("users");
+  let idOfUserToDelete = request.params.id
+
+  const indexOfUserToDelete = users.findIndex(
+    (object) => object.id === parseInt(idOfUserToDelete)
+  );
+
+  if (indexOfUserToDelete === -1) {
+    return response.status(422).json({
+      error: "Sorry user does not exist.",
+    });
+  }
+// checked if user id exists before using new class
+  const deleteUser = new UserService(users,idOfUserToDelete)
+
+  return response
+  .status(200)
+  .json(deleteUser.remove())
 })
+
